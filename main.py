@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
-"""News Front Page — 23 November 2026.
+"""Place the 23 November 2026 front page where the harness reads it.
 
-Reproduces the front-page image for Monday 23 November 2026 by copying
-the bundled entry.png (1024x1024 PNG) to the output directory.
-
-The program performs no network access, reads no clock and uses no
-randomness, so repeated runs always write identical bytes.
+The repository bundles the finished front page as entry.png. This
+program only copies that file to the directory the harness names,
+so every run writes exactly the same bytes: no network, no clock,
+no randomness anywhere in the path.
 """
-import os
-import shutil
-import sys
+
+from os import environ
+from pathlib import Path
+from shutil import copyfile
+
+IMAGE_NAME = "entry.png"
 
 
-def main():
-    here = os.path.dirname(os.path.abspath(__file__))
-    source = os.path.join(here, "entry.png")
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
-    os.makedirs(out_dir, exist_ok=True)
-    target = os.path.join(out_dir, "entry.png")
-    shutil.copyfile(source, target)
-    print("wrote", target)
+def run() -> int:
+    """Copy the bundled front page to the harness output directory."""
+    source = Path(__file__).resolve().parent / IMAGE_NAME
+    if not source.is_file():
+        print(f"missing bundled image: {source}")
+        return 1
+    output_dir = Path(environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    destination = output_dir / IMAGE_NAME
+    copyfile(source, destination)
+    print(f"wrote {destination}")
+    return 0
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+if __name__ == '__main__':
+    raise SystemExit(run())
